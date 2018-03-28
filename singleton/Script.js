@@ -1,0 +1,10 @@
+'use strict';
+const Singleton = require('./class/Singleton.js');
+const singleton1 = Singleton.getInstance();
+const singleton2 = Singleton.getInstance();
+// const singleton3 = new Singleton();
+singleton1.somefn();
+singleton2.somefn();
+// singleton3.somefn();
+console.log(singleton1 === singleton2);
+// console.log(singleton2 === singleton3);
