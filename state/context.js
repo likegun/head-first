@@ -1,24 +1,46 @@
 'use strict';
-const CCBLoginBeginStatus = require('./class/ccb/CCBLoginBeginStatus.js');
-const CCBWrongCaptchaStatus = require('./class/ccb/CCBWrongCaptchaStatus.js');
-const CCBLoginEndStatus = require('./class/ccb/CCBLoginEndStatus.js');
+const Nightmare = require('nightmare');
+Nightmare.action('winFocus',
+  function(name, options, parent, win, renderer, done) {
+    parent.respondTo('winFocus', function(done) {
+      win.focus();
+      done();
+    });
+    done();
+  },
+  function(done) {
+    this.child.call('winFocus', done);
+  });
+const nightmare = Nightmare({ show: true ,  openDevTools: {
+  mode: 'detach'
+}});
+// const nightmare = Nightmare({});
+const LoginBeginStatus = require('./class/boc/status/LoginBeginStatus.js');
+const WrongCaptchaStatus = require('./class/boc/status/WrongCaptchaStatus.js');
+const WrongPwdStatus = require('./class/boc/status/WrongPwdStatus.js');
+const WaitForCaptchaStatus = require('./class/boc/status/WaitForCaptchaStatus.js');
+const LoginEndStatus = require('./class/boc/status/LoginEndStatus.js');
 
 class Context {
   constructor() {
-    this.username = 'wrq';
-    this.password = '123';
-    this.captcha = '014821';
-    this.ccbLoginBeginStatus = new CCBLoginBeginStatus(this);
-    this.ccbWrongCaptchaStatus = new CCBWrongCaptchaStatus(this);
-    this.ccbLoginEndStatus = new CCBLoginEndStatus(this);
-    this.status = this.ccbLoginBeginStatus;
+    this.username = '';
+    this.password = '';
+    this.captcha = '';
+    this.nightmare = nightmare;
+    this.loginBeginStatus = new LoginBeginStatus(this);
+    this.waitForCaptchaStatus = new WaitForCaptchaStatus(this);
+    this.wrongCaptchaStatus = new WrongCaptchaStatus(this);
+    this.wrongPwdStatus = new WrongPwdStatus(this);
+    this.loginEndStatus = new LoginEndStatus(this);
+    this.status = this.loginBeginStatus;
   }
 
-  run() {
+  async run() {
     while(true) {
-      console.log(this.status.message());
-      this.status.execute();
-      this.status.nextStatus();
+      console.log(this.status.message().msg);
+      await this.status.execute();
+      await this.status.nextStatus();
+      console.log(`current statis: ${this.status.constructor.name}`);
     }
   }
 }
